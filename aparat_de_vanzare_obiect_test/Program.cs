@@ -80,7 +80,10 @@ namespace aparat_de_vanzare_obiect_test
         {
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("Ati primit un produs.");
+            Program.returnMerch = true;
             Console.WriteLine("Ati primit rest: 1x 0.05 .");
+            Program.returnD = false;
+            Program.returnN = true;
             Console.WriteLine("Aparatul este gol.");
             this._context.TransitionTo(new ConcreteStateA());
         }
@@ -88,12 +91,18 @@ namespace aparat_de_vanzare_obiect_test
         {
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("Mai introduceti o moneda!.");
+            Program.returnMerch = false;
+            Program.returnD = false;
+            Program.returnN = false;
             this._context.TransitionTo(new ConcreteStateC());
         }
         public override void HandleN(ref decimal input)
         {
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("Mai introduceti o moneda!.");
+            Program.returnMerch = false;
+            Program.returnD = false;
+            Program.returnN = false;
             this._context.TransitionTo(new ConcreteStateB());
         }
     }
@@ -104,7 +113,10 @@ namespace aparat_de_vanzare_obiect_test
         {
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("Ati primit un produs.");
+            Program.returnMerch = true;
             Console.WriteLine("Ati primit rest: 1x 0.10 .");
+            Program.returnD = true;
+            Program.returnN = false;
             Console.WriteLine("Aparatul este gol.");
             this._context.TransitionTo(new ConcreteStateA());
         }
@@ -113,6 +125,9 @@ namespace aparat_de_vanzare_obiect_test
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("In aparat este 0.15.");
             Console.WriteLine("Mai introduceti o moneda!.");
+            Program.returnMerch = false;
+            Program.returnD = false;
+            Program.returnN = false;
             this._context.TransitionTo(new ConcreteStateD());
         }
         public override void HandleN(ref decimal input)
@@ -120,6 +135,9 @@ namespace aparat_de_vanzare_obiect_test
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("In aparat este 0.10 .");
             Console.WriteLine("Mai introduceti o moneda!.");
+            Program.returnMerch = false;
+            Program.returnD = false;
+            Program.returnN = false;
             this._context.TransitionTo(new ConcreteStateC());
         }
     }
@@ -129,7 +147,10 @@ namespace aparat_de_vanzare_obiect_test
         {
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("Ati primit un produs.");
+            Program.returnMerch = true;
             Console.WriteLine("Ati primit rest: 1x 0.10, 1x 0.05 .");
+            Program.returnD = true;
+            Program.returnN = true;
             Console.WriteLine("Aparatul este gol.");
             this._context.TransitionTo(new ConcreteStateA());
         }
@@ -137,7 +158,10 @@ namespace aparat_de_vanzare_obiect_test
         {
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("Ati primit un produs.");
+            Program.returnMerch = true;
             Console.WriteLine("Aparatul este gol.");
+            Program.returnD = false;
+            Program.returnN = false;
             this._context.TransitionTo(new ConcreteStateA());
         }
         public override void HandleN(ref decimal input)
@@ -145,6 +169,9 @@ namespace aparat_de_vanzare_obiect_test
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("In aparat este 0.15 .");
             Console.WriteLine("Mai introduceti o moneda!.");
+            Program.returnMerch = false;
+            Program.returnD = false;
+            Program.returnN = false;
             this._context.TransitionTo(new ConcreteStateD());
         }
     }
@@ -154,7 +181,10 @@ namespace aparat_de_vanzare_obiect_test
         {
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("Ati primit un produs");
+            Program.returnMerch = true;
             Console.WriteLine("Ati primit rest: 1x 0.10, 1x 0.05");
+            Program.returnD = true;
+            Program.returnN = true;
             Console.WriteLine("In aparat este 0.05");
             this._context.TransitionTo(new ConcreteStateB());
         }
@@ -162,7 +192,10 @@ namespace aparat_de_vanzare_obiect_test
         {
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("Ati primit un produs");
+            Program.returnMerch = true;
             Console.WriteLine("Ati primit rest: 1x 0.05");
+            Program.returnD = false;
+            Program.returnN = true;
             Console.WriteLine("Aparatul este gol.");
             this._context.TransitionTo(new ConcreteStateA());
         }
@@ -170,19 +203,29 @@ namespace aparat_de_vanzare_obiect_test
         {
             Console.WriteLine($"Ati introdus {input} in aparat.");
             Console.WriteLine("Ati primit un produs.");
+            Program.returnMerch = true;
             Console.WriteLine("Aparatul este gol.");
+            Program.returnD = false;
+            Program.returnN = false;
             this._context.TransitionTo(new ConcreteStateA());
         }
     }
 
     class Program
     {
+        public static bool returnMerch = false;
+        public static bool returnD = false;     // pentru secventa (MONEDA)/XXX ce raporteaza programul.
+        public static bool returnN = false;
+        
         static void Main(string[] args)
         {
             // The client code.
             var context = new Context(new ConcreteStateA());
             while (true)
             {
+                //Console.WriteLine("Dime: " + Convert.ToString(returnD));
+                //Console.WriteLine("Nickel: " + Convert.ToString(returnN));
+                //Console.WriteLine("Produs: "+ Convert.ToString(returnMerch));
                 Console.WriteLine("Introduceti o moneda! ( Q: 0.25 | D: 0.10 | N: 0.05 ).");
                 string Button = Console.ReadLine();
                 Console.Clear();

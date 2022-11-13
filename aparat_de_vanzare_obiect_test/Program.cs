@@ -15,10 +15,52 @@ namespace aparat_de_vanzare_obiect_test
     // represents the current state of the Context.
     public class Coins
     {
-        public static readonly decimal[] coins = new decimal[3] { 0.05m, 0.10m, 0.25m }; // pentru a adauga noi monede acceptate
-        public static readonly int[] coinsavailable = new int[3] { 0, 0, 0 }; // pentru referinta, sau daca vrem sa folosim un anumit nr de monede disponibile in aparat in intreaga functionare a acestuia.
+        public static readonly decimal[] coins = { 0.05m, 0.10m, 0.25m }; // pentru a adauga noi monede acceptate
+        public static readonly int[] coinsavailable = { 0, 0, 0 }; // pentru referinta, sau daca vrem sa folosim un anumit nr de monede disponibile in aparat in intreaga functionare a acestuia.
         public static readonly decimal cost = 0.20m; // pentru a schimba costul produsului
         public static readonly decimal balance = 3m; // pentru a schimba banii de buzunar
+    }
+    class Rest
+    {
+        public static decimal RestCalc(decimal input) // calculeaza cat rest trebuie sa dea / cat poate da
+        {
+            decimal r;
+            r = input;
+            int[] coinsgiven = new int[3] { 0, 0, 0 }; // monede date ca rest
+            int[] coinsavailable = new int[3] { 1, 1, 0 }; //  { nickels, dimes , quarters } 
+                                                           // monede disponibile de dat ca rest intr-un ciclu.     
+            for (int i = 0; i < Coins.coins.Length; i++)
+            {
+                while (r > 0 && coinsavailable[i] > 0)
+                {
+                    coinsgiven[i]++;
+                    coinsavailable[i]--;
+                    r -= Coins.coins[i];
+                }
+            }
+            Console.WriteLine();
+            Console.Write($"Aparatul a dat rest:");
+            for (int j = 0; j < Coins.coins.Length; j++)
+            {
+                if (coinsgiven[j] > 0)
+                {
+                    if (j > 0)
+                    {
+                        Console.Write(",");
+                    }
+                    Program.output[j] = true;
+                    Console.Write($" {coinsgiven[j]} x {Coins.coins[j]} ");
+                }              
+            }
+            Console.WriteLine();
+            //for (int i = 0; i < Coins.coins.Length; i++)
+            //{
+            //    balance += coinsgiven[i] * Coins.coins[i];
+            //}
+            input = r;
+            Console.WriteLine("In aparat este: " + input);// se actualizeaza banii ramasi in aparat.
+            return input;
+        }
     }
     class Context
     {
@@ -40,20 +82,11 @@ namespace aparat_de_vanzare_obiect_test
 
         // The Context delegates part of its behavior to the current State
         // object.
-        public void RequestN()
+        public void Request(int n)
         {
-            this._state.HandleN(ref Coins.coins[0]);
+            this._state.Handle(Coins.coins[n]);
         }
-        public void RequestD()
-        {
-            this._state.HandleD(ref Coins.coins[1]);
-        }
-        public void RequestQ()
-        {
-            this._state.HandleQ(ref Coins.coins[2]);
-        }
-    }
-
+    }   
     // The base State class declares methods that all Concrete State should
     // implement and also provides a backreference to the Context object,
     // associated with the State. This backreference can be used by States to
@@ -67,156 +100,92 @@ namespace aparat_de_vanzare_obiect_test
             this._context = context;
         }
 
-        public abstract void HandleQ(ref decimal input);
-        public abstract void HandleD(ref decimal input);
-        public abstract void HandleN(ref decimal input);
+        public abstract void Handle(decimal input);
     }
+    
 
     // Concrete States implement various behaviors, associated with a state of
     // the Context.
     class ConcreteStateA : State // 0.00 IN APARAT
     {
-        public override void HandleQ(ref decimal input)
+        public override void Handle(decimal input)
         {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("Ati primit un produs.");
-            Program.returnMerch = true;
-            Console.WriteLine("Ati primit rest: 1x 0.05 .");
-            Program.returnD = false;
-            Program.returnN = true;
-            Console.WriteLine("Aparatul este gol.");
-            this._context.TransitionTo(new ConcreteStateA());
-        }
-        public override void HandleD(ref decimal input)
-        {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("Mai introduceti o moneda!.");
-            Program.returnMerch = false;
-            Program.returnD = false;
-            Program.returnN = false;
-            this._context.TransitionTo(new ConcreteStateC());
-        }
-        public override void HandleN(ref decimal input)
-        {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("Mai introduceti o moneda!.");
-            Program.returnMerch = false;
-            Program.returnD = false;
-            Program.returnN = false;
-            this._context.TransitionTo(new ConcreteStateB());
+            Console.WriteLine($"Ati introdus in aparat: {input}");
+            if(input >= Coins.cost)
+            {
+                Console.WriteLine("Ati primit un produs");
+                Program.returnMerch = true;
+                input -= Coins.cost;
+                if(input > 0)
+                {
+                    input = Rest.RestCalc(input);
+                }
+                else
+                {
+                    Console.WriteLine("Aparatul este gol.");
+                }
+            }
+            else
+            {
+                //Console.WriteLine("In aparat este: " + input);
+                Console.WriteLine("Mai introduceti o moneda!");
+            }
+            switch (input) 
+            {
+                case 0m:                   
+                    this._context.TransitionTo(new ConcreteStateA());
+                    break;
+                case 0.05m:
+                    this._context.TransitionTo(new ConcreteStateB());
+                    break;
+                case 0.10m:
+                    this._context.TransitionTo(new ConcreteStateC());
+                    break;
+                case 0.15m:
+                    this._context.TransitionTo(new ConcreteStateD());
+                    break;
+            }
         }
     }
 
-    class ConcreteStateB : State // 0.05 IN APARAT
+    class ConcreteStateB : State // 0.05 
     {
-        public override void HandleQ(ref decimal input)
+        private readonly decimal balance = 0.05m;
+        public override void Handle(decimal input)
         {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("Ati primit un produs.");
-            Program.returnMerch = true;
-            Console.WriteLine("Ati primit rest: 1x 0.10 .");
-            Program.returnD = true;
-            Program.returnN = false;
-            Console.WriteLine("Aparatul este gol.");
-            this._context.TransitionTo(new ConcreteStateA());
-        }
-        public override void HandleD(ref decimal input)
-        {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("In aparat este 0.15.");
-            Console.WriteLine("Mai introduceti o moneda!.");
-            Program.returnMerch = false;
-            Program.returnD = false;
-            Program.returnN = false;
-            this._context.TransitionTo(new ConcreteStateD());
-        }
-        public override void HandleN(ref decimal input)
-        {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("In aparat este 0.10 .");
-            Console.WriteLine("Mai introduceti o moneda!.");
-            Program.returnMerch = false;
-            Program.returnD = false;
-            Program.returnN = false;
-            this._context.TransitionTo(new ConcreteStateC());
+            input += balance;
+            ConcreteStateA B = new ConcreteStateA();
+            B.SetContext(this._context);
+            B.Handle(input);
         }
     }
     class ConcreteStateC : State // IN APARAT ESTE 0.10
     {
-        public override void HandleQ(ref decimal input)
+        private readonly decimal balance = 0.10m;
+        public override void Handle(decimal input)
         {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("Ati primit un produs.");
-            Program.returnMerch = true;
-            Console.WriteLine("Ati primit rest: 1x 0.10, 1x 0.05 .");
-            Program.returnD = true;
-            Program.returnN = true;
-            Console.WriteLine("Aparatul este gol.");
-            this._context.TransitionTo(new ConcreteStateA());
-        }
-        public override void HandleD(ref decimal input)
-        {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("Ati primit un produs.");
-            Program.returnMerch = true;
-            Console.WriteLine("Aparatul este gol.");
-            Program.returnD = false;
-            Program.returnN = false;
-            this._context.TransitionTo(new ConcreteStateA());
-        }
-        public override void HandleN(ref decimal input)
-        {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("In aparat este 0.15 .");
-            Console.WriteLine("Mai introduceti o moneda!.");
-            Program.returnMerch = false;
-            Program.returnD = false;
-            Program.returnN = false;
-            this._context.TransitionTo(new ConcreteStateD());
+            input += balance;
+            ConcreteStateA B = new ConcreteStateA();
+            B.SetContext(this._context);
+            B.Handle(input);
         }
     }
     class ConcreteStateD : State // in APARAT ESTE 0.15
     {
-        public override void HandleQ(ref decimal input)
+        private readonly decimal balance = 0.15m;
+        public override void Handle(decimal input)
         {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("Ati primit un produs");
-            Program.returnMerch = true;
-            Console.WriteLine("Ati primit rest: 1x 0.10, 1x 0.05");
-            Program.returnD = true;
-            Program.returnN = true;
-            Console.WriteLine("In aparat este 0.05");
-            this._context.TransitionTo(new ConcreteStateB());
-        }
-        public override void HandleD(ref decimal input)
-        {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("Ati primit un produs");
-            Program.returnMerch = true;
-            Console.WriteLine("Ati primit rest: 1x 0.05");
-            Program.returnD = false;
-            Program.returnN = true;
-            Console.WriteLine("Aparatul este gol.");
-            this._context.TransitionTo(new ConcreteStateA());
-        }
-        public override void HandleN(ref decimal input)
-        {
-            Console.WriteLine($"Ati introdus {input} in aparat.");
-            Console.WriteLine("Ati primit un produs.");
-            Program.returnMerch = true;
-            Console.WriteLine("Aparatul este gol.");
-            Program.returnD = false;
-            Program.returnN = false;
-            this._context.TransitionTo(new ConcreteStateA());
+            input += balance;
+            ConcreteStateA B = new ConcreteStateA();
+            B.SetContext(this._context);
+            B.Handle(input);
         }
     }
 
     class Program
     {
-        public static bool returnMerch = false;
-        public static bool returnD = false;     // pentru secventa (MONEDA)/XXX ce raporteaza programul.
-        public static bool returnN = false;
-        
+        public static bool returnMerch = false; // RETURN MERCH 
+        public static bool[] output = { false, false }; // RETURN NICKEL / RETURN DIME
         static void Main(string[] args)
         {
             // The client code.
@@ -232,18 +201,19 @@ namespace aparat_de_vanzare_obiect_test
                 switch (Button)
                 {
                     case "Q":
-                        context.RequestQ();
+                        context.Request(2);
                         break;
                     case "D":
-                        context.RequestD();
+                        context.Request(1);
                         break;
                     case "N":
-                        context.RequestN();
+                        context.Request(0);
                         break;
                     default:
                         break;
                 }
             }
         }
+     
     }
 }
